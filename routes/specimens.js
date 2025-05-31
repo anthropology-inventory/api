@@ -1,37 +1,54 @@
 const { Router } = require("express");
-const { getAllSpecimens, createSpecimen, getSingleSpecimenById, updateSpecimen, getRecordCount, getTotalCost, deleteSpecimen, getRecentSpecimens, getAllSpecimensByCategory, getCurrentValue, } = require('../controllers/specimenController');
-const requireAuth = require('../middleware/authMiddleware.js');
+const {
+    getAllSpecimens,
+    createSpecimen,
+    getSingleSpecimenById,
+    updateSpecimen,
+    getRecordCount,
+    getTotalCost,
+    deleteSpecimen,
+    getRecentSpecimens,
+    getAllSpecimensByCategory,
+    getCurrentValue,
+} = require("../controllers/specimenController");
+const requireAuth = require("../middleware/authMiddleware.js"); // protects routes
+const upload = require("../middleware/uploadMiddleware.js"); // handles image file uploads
 
 const specimensRouter = Router();
 
 // GET all specimens
-specimensRouter.get('/', requireAuth, getAllSpecimens);
+specimensRouter.get("/", requireAuth, getAllSpecimens);
 
 // GET all specimens by category
-specimensRouter.get('/totalByCategory/:cat', requireAuth, getAllSpecimensByCategory);
+specimensRouter.get(
+    "/totalByCategory/:cat",
+    requireAuth,
+    getAllSpecimensByCategory
+);
 
 // GET total number of records
-specimensRouter.get('/totalRecords', requireAuth, getRecordCount);
+specimensRouter.get("/totalRecords", requireAuth, getRecordCount);
 
 // GET total collection cost
-specimensRouter.get('/totalCost', requireAuth, getTotalCost);
+specimensRouter.get("/totalCost", requireAuth, getTotalCost);
 
 // GET current collection value
-specimensRouter.get('/currentVal', requireAuth, getCurrentValue);
+specimensRouter.get("/currentVal", requireAuth, getCurrentValue);
 
 // GET recent specimens (3)
-specimensRouter.get('/recent', requireAuth, getRecentSpecimens);
+specimensRouter.get("/recent", requireAuth, getRecentSpecimens);
 
 // GET specimen by id
-specimensRouter.get('/:id', requireAuth, getSingleSpecimenById);
+specimensRouter.get("/:id", requireAuth, getSingleSpecimenById);
 
-// POST a new specimen
-specimensRouter.post('/', requireAuth, createSpecimen);
+// POST a new specimen and an image to cloudinary
+specimensRouter.post("/", requireAuth, upload.single("image"), createSpecimen);
+// specimensRouter.post("/", requireAuth, createSpecimen);
 
 // PATCH a specimen by id
-specimensRouter.patch('/:id', requireAuth, updateSpecimen);
+specimensRouter.patch("/:id", requireAuth, updateSpecimen);
 
 // DELETE a specimen by id
-specimensRouter.delete('/:id', requireAuth, deleteSpecimen);
+specimensRouter.delete("/:id", requireAuth, deleteSpecimen);
 
 module.exports = specimensRouter;
