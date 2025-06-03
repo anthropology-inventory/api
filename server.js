@@ -1,4 +1,5 @@
 const express = require("express");
+const fileUpload = require("express-fileupload");
 const specimensRouter = require('./routes/specimens.js');
 const authRouter = require("./routes/auth.js");
 const mongoose = require("mongoose");
@@ -22,6 +23,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+app.use(fileUpload())
 
 // TODO: host any and all images and svg via cloudinary
 
