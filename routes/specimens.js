@@ -12,7 +12,7 @@ const {
     getCurrentValue,
 } = require("../controllers/specimenController");
 const requireAuth = require("../middleware/authMiddleware.js"); // protects routes
-const upload = require("../middleware/uploadMiddleware.js"); // handles image file uploads
+// const upload = require("../middleware/uploadMiddleware.js"); // handles image file uploads
 
 const specimensRouter = Router();
 
@@ -42,7 +42,7 @@ specimensRouter.get("/recent", requireAuth, getRecentSpecimens);
 specimensRouter.get("/:id", requireAuth, getSingleSpecimenById);
 
 // POST a new specimen and an image to cloudinary
-specimensRouter.post("/", requireAuth, upload.single("image"), createSpecimen);
+specimensRouter.post("/", requireAuth, createSpecimen);
 // specimensRouter.post("/", requireAuth, createSpecimen);
 
 // PATCH a specimen by id

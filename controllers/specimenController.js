@@ -1,5 +1,6 @@
 const Specimen = require("../models/specimen.js");
 const path = require("path");
+const cloudinary = require("../utils/cloudinary");
 
 // get all specimens
 const getAllSpecimens = async (req, res) => {
@@ -29,13 +30,21 @@ const getSingleSpecimenById = async (req, res) => {
 
 // create a new specimen
 const createSpecimen = async (req, res) => {
-    let images = "";
+    let imageUrl = "";
 
-    if (req.file) {
-        console.log("Uploaded file from multer/cloudinary:", req.file);
-        images = req.file.path; // secure Cloudinary URL
-    } else {
-        console.log("No image uploaded, this is optional.");
+    if (req.files && req.files.image) {
+        try {
+            const result = await cloudinary.uploader.upload(
+                req.files.image.tempFilePath,
+                {
+                    folder: "specimen-images",
+                }
+            );
+            imageUrl = result.secure_url;
+        } catch (err) {
+            console.error("Cloudinary upload error:", err);
+            return res.status(500).json({ error: "Image upload failed" });
+        }
     }
 
     const {
@@ -82,7 +91,7 @@ const createSpecimen = async (req, res) => {
             location,
             description,
             notes,
-            images,
+            images: imageUrl || undefined,
         });
         res.status(200);
         res.json(specimen);
