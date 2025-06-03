@@ -24,7 +24,7 @@ const specimenSchema = new Schema({
     },
     material: {
         type: String,
-        required: true
+        required: false
     },
     manufacturerId: {
         type: String,
@@ -40,7 +40,7 @@ const specimenSchema = new Schema({
     },
     anthropologist: {
         type: String,
-        required: true
+        required: false
     },
     activeValue: {
         type: Number,
