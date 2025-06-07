@@ -36,6 +36,11 @@ app.use(fileUpload({ useTempFiles: true }));
 // serve the svg folder statically at /svg
 // app.use("/svg", express.static("../svg"));
 
+// base route - simple status message
+app.get("/", (req, res) => {
+    res.send("Server is running");
+});
+
 // routes
 app.use("/api/specimens", specimensRouter);
 app.use("/api", authRouter);
