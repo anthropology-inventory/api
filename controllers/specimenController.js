@@ -126,26 +126,106 @@ const deleteSpecimen = async (req, res) => {
 
 // update a specimen | NOTE: currently works, but can only update fields that exist in the current schema.
 const updateSpecimen = async (req, res) => {
-    const filter = { _id: req.params.id };
-    const update = { $set: req.body };
-    const options = { new: true, runValidators: true };
+    // const filter = { _id: req.params.id };
+    // const update = { $set: req.body };
+    // const options = { new: true, runValidators: true };
+    const specimenId = req.params.id;
+    let imageUrl;
 
     try {
-        const updatedSpecimen = await Specimen.findOneAndUpdate(
-            filter,
-            update,
-            options
+        // const updatedSpecimen = await Specimen.findOneAndUpdate(
+        //     filter,
+        //     update,
+        //     options
+        // );
+
+        // if (!updatedSpecimen) {
+        //     return res.status(404).json({ message: "Specimen not found" });
+        // }
+
+        // res.status(200);
+        // res.json({
+        //     message: "Specimen updated successfully!",
+        //     data: updatedSpecimen,
+        // });
+
+        // Checks if there is a image, if so we'll set it up in Cloudinary
+        if (req.files && req.files.image) {
+            const result = await cloudinary.uploader.upload(
+                req.files.image.tempFilePath,
+                { folder: "specimen-images" }
+            );
+            imageUrl = result.secure_url;
+        }
+
+        const {
+            category,
+            genus,
+            species,
+            nickName,
+            specimenId: newSpecimenId,
+            material,
+            manufacturerId,
+            manufacturer,
+            countryManufactured,
+            anthropologist,
+            activeValue,
+            paidValue,
+            dateOfPurchase,
+            purchaser,
+            regionFound,
+            countryFound,
+            location,
+            description,
+            notes,
+        } = req.body;
+
+        const updateFields = {
+            category,
+            genus,
+            species,
+            nickName,
+            specimenId: newSpecimenId,
+            material,
+            manufacturerId,
+            manufacturer,
+            countryManufactured,
+            anthropologist,
+            activeValue,
+            paidValue,
+            dateOfPurchase,
+            purchaser,
+            regionFound,
+            countryFound,
+            location,
+            description,
+            notes,
+        };
+
+        // If there is an imageUrl, we'll set the images to the new imageUrl
+        if (imageUrl) {
+            updateFields.images = imageUrl;
+        }
+
+        const updatedSpecimen = await Specimen.findByIdAndUpdate(
+            specimenId,
+            { $set: updateFields },
+            { new: true, runValidators: true }
         );
 
         if (!updatedSpecimen) {
             return res.status(404).json({ message: "Specimen not found" });
         }
 
-        res.status(200);
-        res.json({
+        res.status(200).json({
             message: "Specimen updated successfully!",
             data: updatedSpecimen,
         });
+
+        // FOR TESTING SINCE A LOT OF ERRORS
+        // console.log("req.files:", req.files);
+        // console.log("req.files.image:", req.files?.image);
+        // console.log("temp path:", req.files?.image?.tempFilePath);
     } catch (error) {
         res.status(400);
         res.json({ error: error.message });
