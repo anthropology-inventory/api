@@ -37,11 +37,14 @@ const signup = async (req, res) => {
 
     try {
         const user = await User.create({ email, password });
-        const token = createToken(user._id);
+        const token = createToken(user._id, user.isAdmin); // added isAdmin
 
         res.status(201);
         res.json({ 
-            user: user._id, 
+            user: {
+                id: user._id,
+                isAdmin: user.isAdmin
+            }, 
             token 
         });
     } catch (err) {
@@ -56,9 +59,12 @@ const login = async (req, res) => {
 
     try {
         const user = await User.login(email, password);
-        const token = createToken(user._id);
+        const token = createToken(user._id, user.isAdmin); // added isAdmin
         return res.status(200).json({
-            user: user._id,
+            user: {
+                id: user._id,
+                isAdmin: user.isAdmin
+            },
             token
         })
     } catch (err) {
