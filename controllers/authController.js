@@ -33,11 +33,11 @@ const handleErrors = (err) => {
 }
 
 const signup = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, isAdmin } = req.body;
 
     try {
-        const user = await User.create({ email, password });
-        const token = createToken(user._id, user.isAdmin); // added isAdmin
+        const user = await User.create({ email, password, isAdmin });
+        const token = createToken(user._id, user.isAdmin);
 
         res.status(201);
         res.json({ 
@@ -59,7 +59,7 @@ const login = async (req, res) => {
 
     try {
         const user = await User.login(email, password);
-        const token = createToken(user._id, user.isAdmin); // added isAdmin
+        const token = createToken(user._id, user.isAdmin);
         return res.status(200).json({
             user: {
                 id: user._id,
