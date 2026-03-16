@@ -16,6 +16,10 @@ const userSchema = new Schema({
         required: [true, 'Please enter a password'],
         minLength: [6, 'Password must be at least 6 characters long']
     },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    }
 });
 
 // log signup after doc saved to db
