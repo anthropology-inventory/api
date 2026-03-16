@@ -20,7 +20,7 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     }
-});
+}, { timestamps: true });
 
 // log signup after doc saved to db
 userSchema.post('save', function (doc, next) {
