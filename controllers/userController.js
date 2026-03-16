@@ -40,9 +40,19 @@ const updateUser = async (req, res) => {
     const { email, isAdmin } = req.body;
 
     try {
+        const updateFields = {};
+
+        if (email !== undefined) {
+            updateFields.email = email;
+        }
+
+        if (isAdmin !== undefined) {
+            updateFields.isAdmin = isAdmin;
+        }
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { $set: { email, isAdmin } },
+            { $set: updateFields },
             { new: true, runValidators: true }
         ).select("-password");
 
@@ -66,11 +76,27 @@ const deleteUser = async (req, res) => {
     const userId = req.params.id;
 
     try {
-        const deletedUser = await User.findByIdAndDelete(userId).select("-password");
+        const userToDelete = await User.findById(userId);
 
-        if (!deletedUser) {
+        if (!userToDelete) {
             return res.status(404).json({ message: "User not found" });
         }
+
+        // prevent admins from deleting themselves
+        if (req.user.id === userId) {
+            return res.status(400).json({ message: "You cannot delete your own account" });
+        }
+
+        // prevent deleting the last admin
+        if (userToDelete.isAdmin) {
+            const adminCount = await User.countDocuments({ isAdmin: true });
+
+            if (adminCount <= 1) {
+                return res.status(400).json({ message: "Cannot delete the last admin" });
+            }
+        }
+
+        const deletedUser = await User.findByIdAndDelete(userId).select("-password");
 
         res.status(200);
         res.json({
