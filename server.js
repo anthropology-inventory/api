@@ -2,6 +2,7 @@ const express = require("express");
 const fileUpload = require("express-fileupload");
 const specimensRouter = require("./routes/specimens.js");
 const authRouter = require("./routes/auth.js");
+const usersRouter = require("./routes/users.js");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 // routes
 app.use("/api/specimens", specimensRouter);
 app.use("/api", authRouter);
+app.use("/api/users", usersRouter);
 
 // connect to db
 mongoose

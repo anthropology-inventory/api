@@ -16,7 +16,7 @@ const requireAuth = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, secret);
-        req.user = decoded.id;
+        req.user = decoded; // changed so we keep id + isAdmin
         next(); // token ok!
     } catch (err) {
         res.status(403);
