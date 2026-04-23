@@ -1,13 +1,24 @@
 const Specimen = require("../models/specimen.js");
-const path = require("path");
 const cloudinary = require("../utils/cloudinary");
+const {
+    parseLocationInput,
+    serializeSpecimen,
+    serializeSpecimens,
+} = require("../utils/location");
+
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+
+const dropUndefinedFields = (value) =>
+    Object.fromEntries(
+        Object.entries(value).filter(([, entryValue]) => entryValue !== undefined)
+    );
 
 // get all specimens
 const getAllSpecimens = async (req, res) => {
     try {
         const specimens = await Specimen.find({}).sort({ createdAt: -1 });
         res.status(200);
-        res.json(specimens);
+        res.json(serializeSpecimens(specimens));
     } catch (err) {
         res.status(500);
         res.json({ error: "failed to get specimens" });
@@ -21,7 +32,7 @@ const getSingleSpecimenById = async (req, res) => {
     try {
         const specimen = await Specimen.findById(specimenId);
         res.status(200);
-        res.json(specimen);
+        res.json(serializeSpecimen(specimen));
     } catch (error) {
         res.status(404);
         res.json({ error: error.message });
@@ -71,17 +82,12 @@ const createSpecimen = async (req, res) => {
 
     // add doc to db
     try {
-        // Ensure location is properly formatted for storage
-        let locationData = location;
-        if (location && typeof location === 'string') {
-            try {
-                locationData = JSON.parse(location);
-            } catch (e) {
-                return res.status(400).json({ 
-                    error: 'Invalid location format',
-                    details: 'Location must be valid JSON'
-                });
-            }
+        const parsedLocation = parseLocationInput(location);
+        if (!parsedLocation.ok) {
+            return res.status(400).json({
+                error: parsedLocation.error,
+                details: parsedLocation.details,
+            });
         }
 
         const specimen = await Specimen.create({
@@ -101,13 +107,13 @@ const createSpecimen = async (req, res) => {
             purchaser,
             regionFound,
             countryFound,
-            location: locationData,
+            location: parsedLocation.value,
             description,
             notes,
             images: imageUrl || undefined,
         });
         res.status(200);
-        res.json(specimen);
+        res.json(serializeSpecimen(specimen));
     } catch (error) {
         res.status(400);
         res.json({ error: error.message });
@@ -129,7 +135,7 @@ const deleteSpecimen = async (req, res) => {
         res.status(200);
         res.json({
             message: "Successfully deleted specimen",
-            data: deletedSpecimen,
+            data: serializeSpecimen(deletedSpecimen),
         });
     } catch (error) {
         res.status(500);
@@ -193,20 +199,15 @@ const updateSpecimen = async (req, res) => {
             notes,
         } = req.body;
 
-        // Parse location if it's a string (from FormData)
-        let locationData = location;
-        if (location && typeof location === 'string') {
-            try {
-                locationData = JSON.parse(location);
-            } catch (e) {
-                return res.status(400).json({ 
-                    error: 'Invalid location format',
-                    details: 'Location must be valid JSON'
-                });
-            }
+        const parsedLocation = parseLocationInput(location);
+        if (!parsedLocation.ok) {
+            return res.status(400).json({
+                error: parsedLocation.error,
+                details: parsedLocation.details,
+            });
         }
 
-        const updateFields = {
+        const updateFields = dropUndefinedFields({
             category,
             genus,
             species,
@@ -223,10 +224,13 @@ const updateSpecimen = async (req, res) => {
             purchaser,
             regionFound,
             countryFound,
-            location: locationData,
             description,
             notes,
-        };
+        });
+
+        if (hasOwn(req.body, "location")) {
+            updateFields.location = parsedLocation.value;
+        }
 
         // If there is an imageUrl, we'll set the images to the new imageUrl
         if (imageUrl) {
@@ -245,7 +249,7 @@ const updateSpecimen = async (req, res) => {
 
         res.status(200).json({
             message: "Specimen updated successfully!",
-            data: updatedSpecimen,
+            data: serializeSpecimen(updatedSpecimen),
         });
 
         // FOR TESTING SINCE A LOT OF ERRORS
@@ -327,7 +331,7 @@ const getRecentSpecimens = async (req, res) => {
         res.status(200);
         res.json({
             message: "Found specimens",
-            data: recentSpecimens,
+            data: serializeSpecimens(recentSpecimens),
         });
     } catch (error) {
         console.error("Error fetching recent specimens", error);

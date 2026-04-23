@@ -4,7 +4,10 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test",
+    "audit:locations": "node scripts/auditLocations.js",
+    "audit:locations:fix": "node scripts/auditLocations.js --fix"
   },
   "author": "",
   "license": "ISC",
