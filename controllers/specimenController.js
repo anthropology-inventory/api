@@ -71,6 +71,19 @@ const createSpecimen = async (req, res) => {
 
     // add doc to db
     try {
+        // Ensure location is properly formatted for storage
+        let locationData = location;
+        if (location && typeof location === 'string') {
+            try {
+                locationData = JSON.parse(location);
+            } catch (e) {
+                return res.status(400).json({ 
+                    error: 'Invalid location format',
+                    details: 'Location must be valid JSON'
+                });
+            }
+        }
+
         const specimen = await Specimen.create({
             category,
             genus,
@@ -88,7 +101,7 @@ const createSpecimen = async (req, res) => {
             purchaser,
             regionFound,
             countryFound,
-            location,
+            location: locationData,
             description,
             notes,
             images: imageUrl || undefined,
@@ -180,6 +193,19 @@ const updateSpecimen = async (req, res) => {
             notes,
         } = req.body;
 
+        // Parse location if it's a string (from FormData)
+        let locationData = location;
+        if (location && typeof location === 'string') {
+            try {
+                locationData = JSON.parse(location);
+            } catch (e) {
+                return res.status(400).json({ 
+                    error: 'Invalid location format',
+                    details: 'Location must be valid JSON'
+                });
+            }
+        }
+
         const updateFields = {
             category,
             genus,
@@ -197,7 +223,7 @@ const updateSpecimen = async (req, res) => {
             purchaser,
             regionFound,
             countryFound,
-            location,
+            location: locationData,
             description,
             notes,
         };
